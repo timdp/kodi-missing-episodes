@@ -6,6 +6,7 @@ var SORT_NUMERIC = function(a, b) {
 };
 
 var config = require('./config.json');
+config.options = config.options || {};
 
 var xbmc = new XBMC.XbmcApi({
   connection: new XBMC.TCPConnection(config.xbmc),
@@ -28,6 +29,9 @@ var tvdbGetEpisodes = function(title, cb) {
       }
       var tvdbEps = {};
       info.episodes.forEach(function(episode) {
+        if (config.options.skipSpecials && episode.season === '0') {
+          return;
+        }
         tvdbEps[episode.season] = tvdbEps[episode.season] || {};
         tvdbEps[episode.season][episode.number] = {
           id: episode.id,
@@ -40,12 +44,14 @@ var tvdbGetEpisodes = function(title, cb) {
 };
 
 var xbmcGetEpisodes = function(id, cb) {
-  // TODO Error handling
   xbmc.media.episodes(id, null, {
     properties: ['season', 'episode', 'originaltitle']
   }, function(episodes) {
     var xbmcEps = {};
     episodes.forEach(function(episode) {
+      if (config.options.skipSpecials && episode.season === 0) {
+        return;
+      }
       xbmcEps[episode.season] = xbmcEps[episode.season] || {};
       xbmcEps[episode.season][episode.episode] = {
         id: episode.episodeid,
@@ -53,6 +59,8 @@ var xbmcGetEpisodes = function(id, cb) {
       };
     });
     cb(null, xbmcEps);
+  }).then(null, function(err) {
+    cb(err);
   });
 };
 
