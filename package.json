@@ -1,0 +1,27 @@
+{
+  "name": "kodi-missing-episodes",
+  "version": "0.0.0",
+  "description": "Checks your Kodi (XBMC) TV collection for missing episodes using TheTVDB.com.",
+  "main": "index.js",
+  "dependencies": {
+    "tvdb": "0.0.13",
+    "xbmc": "git://github.com/timdp/node-xbmc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/timdp/kodi-missing-episodes"
+  },
+  "bugs": {
+    "url": "https://github.com/timdp/kodi-missing-episodes/issues"
+  },
+  "author": {
+    "name": "Tim De Pauw",
+    "url": "http://tmdpw.eu/"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/timdp/kodi-missing-episodes/master/LICENSE"
+    }
+  ]
+}

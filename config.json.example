@@ -1,0 +1,9 @@
+{
+  "tvdb": {
+    "apiKey": "YOUR_API_KEY"
+  },
+  "xbmc": {
+    "host": "127.0.0.1",
+    "port": 9090
+  }
+}
