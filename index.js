@@ -15,6 +15,10 @@ var xbmc = new XBMC.XbmcApi({
 
 var tvdb = new TVDB(config.tvdb);
 
+var isFutureDate = function(date) {
+  return (new Date(date) > new Date());
+};
+
 var tvdbGetEpisodes = function(title, cb) {
   tvdb.findTvShow(title, function(err, results) {
     if (err) {
@@ -29,7 +33,8 @@ var tvdbGetEpisodes = function(title, cb) {
       }
       var tvdbEps = {};
       info.episodes.forEach(function(episode) {
-        if (config.options.skipSpecials && episode.season === '0') {
+        if ((config.options.skipSpecials && episode.season === '0') ||
+            (!config.options.includeUnaired && isFutureDate(episode.firstAired))) {
           return;
         }
         tvdbEps[episode.season] = tvdbEps[episode.season] || {};
