@@ -1,7 +1,7 @@
 kodi-missing-episodes
 =====================
 
-Checks your Kodi (XBMC) TV collection for missing episodes using TheTVDB.com.
+Checks your Kodi (XBMC) TV library for missing episodes using TheTVDB.com.
 
 Author
 ------
