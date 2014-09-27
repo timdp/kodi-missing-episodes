@@ -111,6 +111,20 @@ var matchInfo = function(tvdbEps, xbmcEps) {
   }
 };
 
+var getResultHandler = function(key, data, cb) {
+  return function(err, eps) {
+    if (err) {
+      console.warn(err);
+      return cb();
+    }
+    data[key] = eps;
+    if (data.tvdb && data.xbmc) {
+      matchInfo(data.tvdb, data.xbmc);
+      cb();
+    }
+  };
+};
+
 console.info('Getting show list from Kodi');
 xbmc.media.tvshows(null, function(shows) {
   var cnt = 0;
@@ -120,23 +134,12 @@ xbmc.media.tvshows(null, function(shows) {
       return xbmc.disconnect();
     }
     var show = shows.shift();
+    var data = {};
     console.info('\n== ' + show.label + ' (' + (++cnt) + '/' + total + ') ==');
     console.info('Searching TheTVDB.com');
-    tvdbGetEpisodes(show.label, function(err, tvdbEps) {
-      if (err) {
-        console.warn(err);
-        return nextShow();
-      }
-      console.info('Getting episode information from Kodi');
-      xbmcGetEpisodes(show.tvshowid, function(err, xbmcEps) {
-        if (err) {
-          console.warn(err);
-          return nextShow();
-        }
-        matchInfo(tvdbEps, xbmcEps);
-        nextShow();
-      });
-    });
+    tvdbGetEpisodes(show.label, getResultHandler('tvdb', data, nextShow));
+    console.info('Getting episode information from Kodi');
+    xbmcGetEpisodes(show.tvshowid, getResultHandler('xbmc', data, nextShow));
   };
   nextShow();
 });
