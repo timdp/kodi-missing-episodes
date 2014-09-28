@@ -7,6 +7,8 @@
     "port": 9090
   },
   "options": {
-    "skipSpecials": true
+    "skipSpecials": true,
+    "includeUnaired": true,
+    "verbose": true
   }
 }

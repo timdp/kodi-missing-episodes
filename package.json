@@ -4,6 +4,9 @@
   "description": "Checks your Kodi (XBMC) TV library for missing episodes using TheTVDB.com.",
   "main": "index.js",
   "dependencies": {
+    "chalk": "^0.5.1",
+    "minimist": "^1.1.0",
+    "q": "^1.0.1",
     "tvdb": "0.0.13",
     "xbmc": "git://github.com/timdp/node-xbmc"
   },
