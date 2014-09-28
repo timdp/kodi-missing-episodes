@@ -7,7 +7,7 @@ var minimist = require('minimist');
 var config = require('./config.json');
 config.options = config.options || {};
 
-var opts = ['skipSpecials', 'includeUnaired', 'verbose'];
+var opts = ['excludeSpecials', 'includeUnaired', 'verbose'];
 var argv = minimist(process.argv.slice(2), {
   'boolean': opts
 });
@@ -66,7 +66,7 @@ var tvdbGetEpisodes = function(title) {
       info.episodes.length);
     var tvdbEps = {};
     info.episodes.filter(function(episode) {
-      return ((!config.options.skipSpecials || episode.season > 0) &&
+      return ((!config.options.excludeSpecials || episode.season > 0) &&
         (config.options.includeUnaired || !isFutureDate(episode.firstAired)));
     }).forEach(function(episode) {
       tvdbEps[episode.season] = tvdbEps[episode.season] || {};
@@ -88,7 +88,7 @@ var xbmcGetEpisodes = function(title, id) {
     verbose('Kodi episode count for %s: %d', FMT_TITLE(title), episodes.length);
     var xbmcEps = {};
     episodes.filter(function(episode) {
-      return (!config.options.skipSpecials || episode.season > 0);
+      return (!config.options.excludeSpecials || episode.season > 0);
     }).forEach(function(episode) {
       xbmcEps[episode.season] = xbmcEps[episode.season] || {};
       xbmcEps[episode.season][episode.episode] = {
