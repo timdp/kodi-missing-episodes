@@ -8,7 +8,9 @@ var config = require('./config.json');
 config.options = config.options || {};
 
 var opts = ['skipSpecials', 'includeUnaired', 'verbose'];
-var argv = minimist(process.argv.slice(2), { 'boolean': opts });
+var argv = minimist(process.argv.slice(2), {
+  'boolean': opts
+});
 opts.filter(function(opt) {
   return argv[opt];
 }).forEach(function(opt) {
@@ -60,7 +62,8 @@ var tvdbGetEpisodes = function(title) {
     return Q.nfcall(tvdb.getInfo.bind(tvdb), id);
   })
   .then(function(info) {
-    verbose('TheTVDB Episode count for %s: %d', FMT_TITLE(title), info.episodes.length);
+    verbose('TheTVDB Episode count for %s: %d', FMT_TITLE(title),
+      info.episodes.length);
     var tvdbEps = {};
     info.episodes.filter(function(episode) {
       return ((!config.options.skipSpecials || episode.season > 0) &&
@@ -139,7 +142,8 @@ var matchEpisodeInfo = function(title, tvdbEps, xbmcEps) {
       return true;
     }
   }).forEach(function(tvdbSeason) {
-    Object.keys(tvdbEps[tvdbSeason]).sort(SORT_NUMERIC).filter(function(tvdbEpisode) {
+    Object.keys(tvdbEps[tvdbSeason]).sort(SORT_NUMERIC)
+    .filter(function(tvdbEpisode) {
       return !xbmcEps[tvdbSeason].hasOwnProperty(tvdbEpisode);
     }).forEach(function(tvdbEpisode) {
       missingEpisodes.push({
@@ -156,7 +160,7 @@ var getShowPromise = function(title, id, cnt, total) {
   return function() {
     verbose('Processing show %d of %d: %s', cnt, total, FMT_TITLE(title));
     return Q.all([
-      title, 
+      title,
       tvdbGetEpisodes(title),
       xbmcGetEpisodes(title, id)
     ]).spread(matchEpisodeInfo);
@@ -165,7 +169,7 @@ var getShowPromise = function(title, id, cnt, total) {
 
 var processShows = function(shows) {
   var showCount = shows.length;
-  verbose('Found Kodi shows: %d', + showCount);
+  verbose('Found Kodi shows: %d', showCount);
   var i = 0;
   return shows.reduce(function(curr, show) {
     return curr.then(getShowPromise(show.label, show.tvshowid, ++i, showCount));
