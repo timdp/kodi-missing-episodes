@@ -201,9 +201,8 @@ var getShowPromise = function(title, id, cnt, total) {
 var processShows = function(shows) {
   var showCount = shows.length;
   verbose('Found Kodi shows: %d', showCount);
-  var i = 0;
-  return shows.reduce(function(curr, show) {
-    return curr.then(getShowPromise(show.label, show.tvshowid, ++i, showCount));
+  return shows.reduce(function(curr, show, i) {
+    return curr.then(getShowPromise(show.label, show.tvshowid, i + 1, showCount));
   }, Q());
 };
 
