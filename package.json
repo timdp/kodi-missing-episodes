@@ -8,6 +8,7 @@
     "minimist": "^1.1.0",
     "q": "^1.0.1",
     "tvdb": "0.0.13",
+    "underscore": "^1.7.0",
     "xbmc": "git://github.com/timdp/node-xbmc"
   },
   "repository": {

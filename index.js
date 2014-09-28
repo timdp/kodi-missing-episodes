@@ -3,11 +3,12 @@ var TVDB = require('tvdb');
 var Q = require('q');
 var chalk = require('chalk');
 var minimist = require('minimist');
+var _ = require('underscore');
 
 var config = require('./config.json');
 config.options = config.options || {};
 
-var opts = ['excludeSpecials', 'includeUnaired', 'verbose'];
+var opts = ['excludeSpecials', 'excludeOlder', 'includeUnaired', 'verbose'];
 var argv = minimist(process.argv.slice(2), {
   'boolean': opts
 });
@@ -17,18 +18,17 @@ opts.filter(function(opt) {
   config.options[opt] = true;
 });
 
-var FMT_ERROR, FMT_INFO, FMT_TITLE, FMT_MISSING;
+var FMT_ERROR, FMT_INFO, FMT_EMPH;
 var verbose;
 if (config.options.verbose) {
   FMT_ERROR = chalk.bold.red;
   FMT_INFO = chalk.cyan;
-  FMT_TITLE = chalk.bold;
-  FMT_MISSING = chalk.bold;
+  FMT_EMPH = chalk.bold;
   verbose = function() {
     console.info.apply(console.info, arguments);
   };
 } else {
-  FMT_ERROR = FMT_INFO = FMT_TITLE = FMT_MISSING = function(s) {
+  FMT_ERROR = FMT_INFO = FMT_EMPH = function(s) {
     return s;
   };
   verbose = function() {};
@@ -40,6 +40,10 @@ var SORT_NUMERIC = function(a, b) {
   return a - b;
 };
 
+var TO_INT = function(str) {
+  return parseInt(str, 10);
+};
+
 var logError = function(err) {
   console.error(FMT_ERROR(err.stack || err));
 };
@@ -49,20 +53,20 @@ var isFutureDate = function(date) {
 };
 
 var tvdbGetEpisodes = function(title) {
-  verbose('Finding TheTVDB ID for %s', FMT_TITLE(title));
+  verbose('Finding TheTVDB ID for %s', FMT_EMPH(title));
   return Q.nfcall(tvdb.findTvShow.bind(tvdb), title)
   .then(function(results) {
-    if (results.length === 0) {
+    if (!results.length) {
       throw new Error('Show not found: ' + title);
     }
     return results[0].id;
   })
   .then(function(id) {
-    verbose('Getting TheTVDB episodes for %s (#%s)', FMT_TITLE(title), id);
+    verbose('Getting TheTVDB episodes for %s (#%s)', FMT_EMPH(title), id);
     return Q.nfcall(tvdb.getInfo.bind(tvdb), id);
   })
   .then(function(info) {
-    verbose('TheTVDB Episode count for %s: %d', FMT_TITLE(title),
+    verbose('TheTVDB Episode count for %s: %d', FMT_EMPH(title),
       info.episodes.length);
     var tvdbEps = {};
     info.episodes.filter(function(episode) {
@@ -80,12 +84,12 @@ var tvdbGetEpisodes = function(title) {
 };
 
 var xbmcGetEpisodes = function(title, id) {
-  verbose('Getting Kodi episodes for %s (#%d)', FMT_TITLE(title), id);
+  verbose('Getting Kodi episodes for %s (#%d)', FMT_EMPH(title), id);
   var dfd = Q.defer();
   xbmc.media.episodes(id, null, {
     properties: ['season', 'episode', 'originaltitle']
   }, function(episodes) {
-    verbose('Kodi episode count for %s: %d', FMT_TITLE(title), episodes.length);
+    verbose('Kodi episode count for %s: %d', FMT_EMPH(title), episodes.length);
     var xbmcEps = {};
     episodes.filter(function(episode) {
       return (!config.options.excludeSpecials || episode.season > 0);
@@ -101,37 +105,64 @@ var xbmcGetEpisodes = function(title, id) {
   return dfd.promise;
 };
 
+var formatEpisodeNumber = function(season, number) {
+  return 'S' + (season < 10 ? '0' : '') + season +
+    'E' + (number < 10 ? '0' : '') + number;
+};
+
+var removeOldEpisodes = function(title, tvdbEps, xbmcEps) {
+  var firstSeason = _.min(Object.keys(xbmcEps).filter(_.identity).map(TO_INT));
+  if (firstSeason) {
+    var firstEpisode = _.min(Object.keys(xbmcEps[firstSeason]).map(TO_INT));
+    if (firstSeason > 1 || firstEpisode > 1) {
+      verbose('Excluding episodes of %s older than %s', FMT_EMPH(title),
+        FMT_EMPH(formatEpisodeNumber(firstSeason, firstEpisode)));
+      Object.keys(tvdbEps).map(TO_INT).filter(function(season) {
+        return (season && season < firstSeason);
+      }).forEach(function(season) {
+        delete tvdbEps[season];
+      });
+      Object.keys(tvdbEps[firstSeason]).map(TO_INT).filter(function(episode) {
+        return (episode < firstEpisode);
+      }).forEach(function(episode) {
+        delete tvdbEps[firstSeason][episode];
+      });
+    }
+  }
+};
+
 var reportMissing = function(title, missingSeasons, missingEpisodes) {
   var bullet = String.fromCharCode(0x2022);
   if (missingSeasons.length) {
-    console.info(FMT_INFO('Missing seasons for %s:'), FMT_TITLE(title));
+    console.info(FMT_INFO('Missing seasons for %s:'), FMT_EMPH(title));
     missingSeasons.forEach(function(item) {
       console.info('%s %s (episodes: %s)',
         bullet,
-        FMT_MISSING(item.season > 0 ? 'Season ' + item.season : 'Specials'),
+        FMT_EMPH(item.season > 0 ? 'Season ' + item.season : 'Specials'),
         item.episodes);
     });
   }
   if (missingEpisodes.length) {
-    console.info(FMT_INFO('Missing episodes for %s:'), FMT_TITLE(title));
+    console.info(FMT_INFO('Missing episodes for %s:'), FMT_EMPH(title));
     missingEpisodes.forEach(function(item) {
       console.info('%s %s: %s',
         bullet,
-        FMT_MISSING(
-          'S' + (item.season < 10 ? '0' : '') + item.season +
-          'E' + (item.number < 10 ? '0' : '') + item.number
-        ),
+        FMT_EMPH(formatEpisodeNumber(item.season, item.number)),
         item.title);
     });
   }
   if (!missingSeasons.length && !missingEpisodes.length) {
-    verbose(FMT_INFO('No missing episodes for %s'), FMT_TITLE(title));
+    verbose(FMT_INFO('No missing episodes for %s'), FMT_EMPH(title));
   }
 };
 
 var matchEpisodeInfo = function(title, tvdbEps, xbmcEps) {
   var missingSeasons = [], missingEpisodes = [];
-  Object.keys(tvdbEps).sort(SORT_NUMERIC).filter(function(tvdbSeason) {
+  if (config.options.excludeOlder) {
+    removeOldEpisodes(title, tvdbEps, xbmcEps);
+  }
+  var tvdbSeasons = Object.keys(tvdbEps).map(TO_INT);
+  tvdbSeasons.filter(function(tvdbSeason) {
     if (!xbmcEps.hasOwnProperty(tvdbSeason)) {
       missingSeasons.push({
         season: tvdbSeason,
@@ -141,11 +172,11 @@ var matchEpisodeInfo = function(title, tvdbEps, xbmcEps) {
     } else {
       return true;
     }
-  }).forEach(function(tvdbSeason) {
-    Object.keys(tvdbEps[tvdbSeason]).sort(SORT_NUMERIC)
-    .filter(function(tvdbEpisode) {
+  }).sort(SORT_NUMERIC).forEach(function(tvdbSeason) {
+    var tvdbEpisodes = Object.keys(tvdbEps[tvdbSeason]).map(TO_INT);
+    tvdbEpisodes.filter(function(tvdbEpisode) {
       return !xbmcEps[tvdbSeason].hasOwnProperty(tvdbEpisode);
-    }).forEach(function(tvdbEpisode) {
+    }).sort(SORT_NUMERIC).forEach(function(tvdbEpisode) {
       missingEpisodes.push({
         season: tvdbSeason,
         number: tvdbEpisode,
@@ -158,7 +189,7 @@ var matchEpisodeInfo = function(title, tvdbEps, xbmcEps) {
 
 var getShowPromise = function(title, id, cnt, total) {
   return function() {
-    verbose('Processing show %d of %d: %s', cnt, total, FMT_TITLE(title));
+    verbose('Processing show %d of %d: %s', cnt, total, FMT_EMPH(title));
     return Q.all([
       title,
       tvdbGetEpisodes(title),
@@ -187,7 +218,9 @@ var run = function() {
   xbmc.on('connection:open', function() {
     verbose('Getting show list from Kodi');
     xbmc.media.tvshows().then(function(shows) {
-      processShows(shows).fail(dfd.reject);
+      processShows(shows)
+        .then(dfd.resolve)
+        .fail(dfd.reject);
     });
   });
   xbmc.on('connection:error', dfd.reject);
