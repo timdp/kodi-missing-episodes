@@ -5,6 +5,8 @@ var chalk = require('chalk');
 var minimist = require('minimist');
 var _ = require('underscore');
 
+Q.longStackSupport = true;
+
 var config = require('./config.json');
 config.options = config.options || {};
 
@@ -40,10 +42,6 @@ var SORT_NUMERIC = function(a, b) {
 
 var TO_INT = function(str) {
   return parseInt(str, 10);
-};
-
-var logError = function(err) {
-  console.error(FMT_ERROR(err.stack || err));
 };
 
 var isFutureDate = function(date) {
@@ -83,10 +81,10 @@ var tvdbGetEpisodes = function(title) {
 
 var xbmcGetEpisodes = function(title, id) {
   verbose('Getting Kodi episodes for %s (#%d)', FMT_EMPH(title), id);
-  var dfd = Q.defer();
-  xbmc.media.episodes(id, null, {
+  return Q(xbmc.media.episodes(id, null, {
     properties: ['season', 'episode', 'originaltitle']
-  }, function(episodes) {
+  }))
+  .then(function(episodes) {
     verbose('Kodi episode count for %s: %d', FMT_EMPH(title), episodes.length);
     var xbmcEps = {};
     episodes.filter(function(episode) {
@@ -98,9 +96,8 @@ var xbmcGetEpisodes = function(title, id) {
         title: episode.originaltitle
       };
     });
-    dfd.resolve(xbmcEps);
-  }, dfd.reject);
-  return dfd.promise;
+    return xbmcEps;
+  });
 };
 
 var formatEpisodeNumber = function(season, number) {
@@ -214,18 +211,19 @@ var run = function() {
   });
   xbmc.on('connection:open', function() {
     verbose('Getting show list from Kodi');
-    xbmc.media.tvshows().then(function(shows) {
-      processShows(shows)
-        .then(dfd.resolve)
-        .fail(dfd.reject);
-    });
+    Q(xbmc.media.tvshows())
+      .then(processShows)
+      .then(dfd.resolve)
+      .fail(dfd.reject);
   });
   xbmc.on('connection:error', dfd.reject);
   return dfd.promise;
 };
 
 run()
-  .fail(logError)
+  .fail(function(err) {
+    console.error(FMT_ERROR(err.stack || JSON.stringify(err)));
+  })
   .fin(function() {
     verbose('Disconnecting from Kodi');
     xbmc.disconnect();
