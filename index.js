@@ -24,9 +24,7 @@ if (config.options.verbose) {
   FMT_ERROR = chalk.bold.red;
   FMT_INFO = chalk.cyan;
   FMT_EMPH = chalk.bold;
-  verbose = function() {
-    console.info.apply(console.info, arguments);
-  };
+  verbose = console.info;
 } else {
   FMT_ERROR = FMT_INFO = FMT_EMPH = function(s) {
     return s;
