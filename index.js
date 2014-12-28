@@ -2,23 +2,14 @@ var XBMC = require('xbmc');
 var TVDB = require('tvdb');
 var Q = require('q');
 var chalk = require('chalk');
-var minimist = require('minimist');
+var yargs = require('yargs');
 var _ = require('underscore');
-
-Q.longStackSupport = true;
+var extend = require('util')._extend;
 
 var config = require('./config.json');
-config.options = config.options || {};
+config.options = extend(config.options || {}, yargs.argv);
 
-var opts = ['excludeSpecials', 'excludeOlder', 'includeUnaired', 'verbose'];
-var argv = minimist(process.argv.slice(2), {
-  'boolean': opts
-});
-opts.filter(function(opt) {
-  return argv[opt];
-}).forEach(function(opt) {
-  config.options[opt] = true;
-});
+Q.longStackSupport = true;
 
 var FMT_ERROR, FMT_INFO, FMT_EMPH;
 var verbose;
