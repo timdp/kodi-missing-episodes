@@ -1,7 +1,7 @@
 var XBMC = require('xbmc');
 var TVDB = require('tvdb');
 var Q = require('q');
-var Pool = require('promise-pool').Pool;
+var qlimit = require('qlimit');
 var chalk = require('chalk');
 var yargs = require('yargs');
 var _ = require('underscore');
@@ -175,9 +175,9 @@ var matchEpisodeInfo = function(title, tvdbEps, xbmcEps) {
   reportMissing(title, missingSeasons, missingEpisodes);
 };
 
-var processShow = function(data, index) {
-  var title = data.label, id = data.tvshowid;
-  verbose('Processing show %d of %d: %s', index + 1, this.total, FMT_EMPH(title));
+var processShow = function(data, index, arr) {
+  var title = data.label, id = data.tvshowid, total = arr.length;
+  verbose('Processing show %d of %d: %s', index + 1, total, FMT_EMPH(title));
   return Q.all([
     title,
     tvdbGetEpisodes(title),
@@ -187,12 +187,8 @@ var processShow = function(data, index) {
 
 var processShows = function(shows) {
   verbose('Found Kodi shows: %d', shows.length);
-  var pool = new Pool(processShow, config.options.concurrency, false, shows);
-  return pool.start(function(progress) {
-    if (!progress.success) {
-      throw progress.error;
-    }
-  });
+  var limit = qlimit(config.options.concurrency);
+  return Q.all(shows.map(limit(processShow)));
 };
 
 var run = function() {
