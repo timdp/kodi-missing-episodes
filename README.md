@@ -3,6 +3,35 @@ kodi-missing-episodes
 
 Checks your Kodi (XBMC) TV library for missing episodes using TheTVDB.com.
 
+Requirements
+------------
+
+* [Node.js](http://nodejs.org/)
+* Kodi with the [JSON-RPC API enabled](http://kodi.wiki/view/JSON-RPC_API#Enabling_JSON-RPC)
+* An API key for [TheTVDB.com](http://thetvdb.com/)
+
+Installation
+------------
+
+```bash
+$ git clone https://github.com/timdp/kodi-missing-episodes.git
+$ cd kodi-missing-episodes
+$ npm install
+```
+
+Usage
+-----
+
+1. Copy `config.json.example` to `config.json`
+2. Enter your credentials for Kodi and TheTVDB.com in `config.json`
+3. Run `node kodi-missing-episodes.js`
+
+Advanced
+--------
+
+The `parallel` branch contains an (even more) experimental version of this
+script that's quite a bit faster. Feel free to give it a try.
+
 Author
 ------
 
