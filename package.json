@@ -1,8 +1,11 @@
 {
   "name": "kodi-missing-episodes",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Checks your Kodi (XBMC) TV library for missing episodes using TheTVDB.com.",
-  "main": "index.js",
+  "main": "kodi-missing-episodes.js",
+  "scripts": {
+    "start": "node kodi-missing-episodes.js"
+  },
   "dependencies": {
     "chalk": "^0.5.1",
     "promise-pool": "^0.1.8",
