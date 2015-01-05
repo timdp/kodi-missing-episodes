@@ -11,7 +11,7 @@
     "q": "^1.0.1",
     "tvdb": "0.0.13",
     "underscore": "^1.7.0",
-    "xbmc": "git://github.com/timdp/node-xbmc",
+    "xbmc": "^0.4.1",
     "yargs": "^1.3.3"
   },
   "repository": {
