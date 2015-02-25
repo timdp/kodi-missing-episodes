@@ -26,12 +26,6 @@ Usage
 2. Enter your credentials for Kodi and TheTVDB.com in `config.json`
 3. Run `node kodi-missing-episodes.js`
 
-Advanced
---------
-
-The `parallel` branch contains an (even more) experimental version of this
-script that's quite a bit faster. Feel free to give it a try.
-
 Author
 ------
 
