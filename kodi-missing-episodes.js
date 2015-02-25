@@ -1,6 +1,7 @@
 var XBMC = require('xbmc');
 var TVDB = require('tvdb');
 var Q = require('q');
+var qlimit = require('qlimit');
 var chalk = require('chalk');
 var yargs = require('yargs');
 var _ = require('lodash');
@@ -172,23 +173,20 @@ var matchEpisodeInfo = function(title, tvdbEps, xbmcEps) {
   reportMissing(title, missingSeasons, missingEpisodes);
 };
 
-var getShowPromise = function(title, id, cnt, total) {
-  return function() {
-    verbose('Processing show %d of %d: %s', cnt, total, FMT_EMPH(title));
-    return Q.all([
-      title,
-      tvdbGetEpisodes(title),
-      xbmcGetEpisodes(title, id)
-    ]).spread(matchEpisodeInfo);
-  };
+var processShow = function(data, index, arr) {
+  var title = data.label, id = data.tvshowid, total = arr.length;
+  verbose('Processing show %d of %d: %s', index + 1, total, FMT_EMPH(title));
+  return Q.all([
+    title,
+    tvdbGetEpisodes(title),
+    xbmcGetEpisodes(title, id)
+  ]).spread(matchEpisodeInfo);
 };
 
 var processShows = function(shows) {
-  var showCount = shows.length;
-  verbose('Found Kodi shows: %d', showCount);
-  return shows.reduce(function(curr, show, i) {
-    return curr.then(getShowPromise(show.label, show.tvshowid, i + 1, showCount));
-  }, Q());
+  verbose('Found Kodi shows: %d', shows.length);
+  var limit = qlimit(config.options.concurrency || 3);
+  return Q.all(shows.map(limit(processShow)));
 };
 
 var run = function() {
