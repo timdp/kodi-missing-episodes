@@ -3,11 +3,10 @@ var TVDB = require('tvdb');
 var Q = require('q');
 var chalk = require('chalk');
 var yargs = require('yargs');
-var _ = require('underscore');
-var extend = require('util')._extend;
+var _ = require('lodash');
 
 var config = require('./config.json');
-config.options = extend(config.options || {}, yargs.argv);
+config.options = _.assign(config.options || {}, yargs.argv);
 
 Q.longStackSupport = true;
 
