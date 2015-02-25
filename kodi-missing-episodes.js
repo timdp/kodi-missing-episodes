@@ -25,7 +25,7 @@ if (config.options.verbose) {
   verbose = function() {};
 }
 
-var xbmc, tvdb;
+var xbmc, tvdbs;
 
 var SORT_NUMERIC = function(a, b) {
   return a - b;
@@ -41,16 +41,26 @@ var isFutureDate = function(date) {
 
 var tvdbGetEpisodes = function(title) {
   verbose('Finding TheTVDB ID for %s', FMT_EMPH(title));
-  return Q.nfcall(tvdb.findTvShow.bind(tvdb), title)
+  var tvdb = null;
+  return tvdbs.reduce(function(prev, curr) {
+    return prev.then(function(results) {
+      if (results.length) {
+        return results;
+      }
+      tvdb = curr;
+      return Q.ninvoke(curr, 'findTvShow', title);
+    });
+  }, Q([]))
   .then(function(results) {
     if (!results.length) {
       throw new Error('Show not found: ' + title);
     }
-    return results[0].id;
+    return results[0];
   })
-  .then(function(id) {
-    verbose('Getting TheTVDB episodes for %s (#%s)', FMT_EMPH(title), id);
-    return Q.nfcall(tvdb.getInfo.bind(tvdb), id);
+  .then(function(meta) {
+    verbose('Getting TheTVDB/%s episodes for %s (#%s)',
+      meta.language, FMT_EMPH(title), meta.id);
+    return Q.ninvoke(tvdb, 'getInfo', meta.id);
   })
   .then(function(info) {
     verbose('TheTVDB Episode count for %s: %d', FMT_EMPH(title),
@@ -185,13 +195,18 @@ var processShow = function(data, index, arr) {
 
 var processShows = function(shows) {
   verbose('Found Kodi shows: %d', shows.length);
+  var showsSorted = _.sortBy(shows, 'label');
   var limit = qlimit(config.options.concurrency || 1);
-  return Q.all(shows.map(limit(processShow)));
+  return Q.all(showsSorted.map(limit(processShow)));
 };
 
 var run = function() {
   var dfd = Q.defer();
-  tvdb = new TVDB(config.tvdb);
+  var tvdbLangs = config.tvdb.languages || ['en'];
+  delete config.tvdb.languages;
+  tvdbs = tvdbLangs.map(function(lang) {
+    return new TVDB(_.assign({}, config.tvdb, {language: lang}));
+  });
   verbose('Connecting to Kodi');
   xbmc = new XBMC.XbmcApi({
     connection: new XBMC.TCPConnection(config.xbmc),
