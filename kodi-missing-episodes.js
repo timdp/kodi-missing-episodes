@@ -4,12 +4,10 @@ var Q = require('q');
 var qlimit = require('qlimit');
 var chalk = require('chalk');
 var yargs = require('yargs');
-var _ = require('underscore');
-var extend = require('util')._extend;
+var _ = require('lodash');
 
 var config = require('./config.json');
-config.options = extend(config.options || {}, yargs.argv);
-config.options.concurrency = config.options.concurrency || 3;
+config.options = _.assign(config.options || {}, yargs.argv);
 
 Q.longStackSupport = true;
 
@@ -187,7 +185,7 @@ var processShow = function(data, index, arr) {
 
 var processShows = function(shows) {
   verbose('Found Kodi shows: %d', shows.length);
-  var limit = qlimit(config.options.concurrency);
+  var limit = qlimit(config.options.concurrency || 3);
   return Q.all(shows.map(limit(processShow)));
 };
 
