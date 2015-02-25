@@ -185,7 +185,7 @@ var processShow = function(data, index, arr) {
 
 var processShows = function(shows) {
   verbose('Found Kodi shows: %d', shows.length);
-  var limit = qlimit(config.options.concurrency || 3);
+  var limit = qlimit(config.options.concurrency || 1);
   return Q.all(shows.map(limit(processShow)));
 };
 
