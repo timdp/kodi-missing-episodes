@@ -6,23 +6,24 @@ var XBMC = require('xbmc'),
     yargs = require('yargs'),
     _ = require('lodash');
 
+Q.longStackSupport = true;
+
 var config = require('./config.json');
 config.options = _.assign(config.options || {}, yargs.argv);
-
-Q.longStackSupport = true;
 
 var fmt = {};
 var verbose;
 if (config.options.verbose) {
   fmt.error = chalk.bold.red;
+  fmt.warn = chalk.yellow;
   fmt.info = chalk.cyan;
   fmt.emph = chalk.bold;
   verbose = console.info;
 } else {
-  fmt.error = fmt.info = fmt.emph = function(s) {
-    return s;
-  };
-  verbose = function() {};
+  ['error', 'warn', 'info', 'emph'].forEach(function(fn) {
+    fmt[fn] = _.identity;
+  });
+  verbose = _.noop;
 }
 
 var xbmc, tvdbs;
@@ -130,7 +131,7 @@ var removeOldEpisodes = function(title, tvdbEps, xbmcEps) {
 var reportMissing = function(title, missingSeasons, missingEpisodes) {
   var bullet = String.fromCharCode(0x2022);
   if (missingSeasons.length) {
-    console.info(fmt.info('Missing seasons for %s:'), fmt.emph(title));
+    console.info(fmt.warn('Missing seasons for %s:'), fmt.emph(title));
     missingSeasons.forEach(function(item) {
       console.info('%s %s (episodes: %s)',
         bullet,
@@ -139,7 +140,7 @@ var reportMissing = function(title, missingSeasons, missingEpisodes) {
     });
   }
   if (missingEpisodes.length) {
-    console.info(fmt.info('Missing episodes for %s:'), fmt.emph(title));
+    console.info(fmt.warn('Missing episodes for %s:'), fmt.emph(title));
     missingEpisodes.forEach(function(item) {
       console.info('%s %s: %s',
         bullet,
