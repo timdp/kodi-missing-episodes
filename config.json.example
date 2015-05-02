@@ -10,6 +10,7 @@
     "excludeSpecials": true,
     "includeUnaired": true,
     "verbose": true,
-    "color": true
+    "color": true,
+    "decorate": true
   }
 }
