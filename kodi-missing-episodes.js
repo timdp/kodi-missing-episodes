@@ -12,19 +12,18 @@ var config = require('./config.json');
 config.options = _.assign(config.options || {}, yargs.argv);
 
 var fmt = {};
-var verbose;
-if (config.options.verbose) {
+if (config.options.color) {
   fmt.error = chalk.bold.red;
   fmt.warn = chalk.yellow;
   fmt.info = chalk.cyan;
   fmt.emph = chalk.bold;
-  verbose = console.info;
 } else {
   ['error', 'warn', 'info', 'emph'].forEach(function(fn) {
     fmt[fn] = _.identity;
   });
-  verbose = _.noop;
 }
+
+var verbose = config.options.verbose ? console.info : _.noop;
 
 var xbmc, tvdbs;
 

@@ -9,6 +9,7 @@
   "options": {
     "excludeSpecials": true,
     "includeUnaired": true,
-    "verbose": true
+    "verbose": true,
+    "color": true
   }
 }
