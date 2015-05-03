@@ -2,7 +2,7 @@
   "tvdb": {
     "apiKey": "YOUR_API_KEY"
   },
-  "xbmc": {
+  "kodi": {
     "host": "127.0.0.1",
     "port": 9090
   },
