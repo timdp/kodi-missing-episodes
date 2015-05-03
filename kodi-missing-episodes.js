@@ -237,21 +237,23 @@ var processShows = function(shows) {
     });
 };
 
-var handleError = function(err) {
-  console.error(err.stack || JSON.stringify(err));
-  process.exit(1);
-};
-
-var run = function() {
-  return Q.all([tvdbInit(), kodiConnect()])
-    .then(function() {
-      events.emit('kodi_listing_shows');
-      return kodi.getShows();
-    })
+var listAndProcessShows = function() {
+  events.emit('kodi_listing_shows');
+  return kodi.getShows()
     .then(function(shows) {
       events.emit('kodi_listed_shows', {shows: shows});
       return processShows(shows);
     });
+};
+
+var run = function() {
+  return Q.all([tvdbInit(), kodiConnect()])
+    .then(listAndProcessShows);
+};
+
+var handleError = function(err) {
+  console.error(err.stack || JSON.stringify(err));
+  process.exit(1);
 };
 
 run()
