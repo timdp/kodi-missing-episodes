@@ -1,3 +1,5 @@
+'use strict'
+
 var Q = require('q')
 var qlimit = require('qlimit')
 var yargs = require('yargs')
