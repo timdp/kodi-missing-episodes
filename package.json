@@ -27,10 +27,5 @@
     "name": "Tim De Pauw",
     "url": "https://tmdpw.eu/"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://raw.githubusercontent.com/timdp/kodi-missing-episodes/master/LICENSE"
-    }
-  ]
+  "license": "MIT"
 }
