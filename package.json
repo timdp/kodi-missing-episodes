@@ -16,10 +16,7 @@
     "xbmc": "^0.4.1",
     "yargs": "^3.8.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/timdp/kodi-missing-episodes"
-  },
+  "repository": "timdp/kodi-missing-episodes",
   "bugs": {
     "url": "https://github.com/timdp/kodi-missing-episodes/issues"
   },
