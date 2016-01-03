@@ -45,7 +45,8 @@ var filterEpisodes = function (episodes, noSpecials, noUnaired) {
 var groupBySeason = function (episodes, numberKey, titleKey, idKey) {
   var result = {}
   episodes.forEach(function (episode) {
-    var season = episode.season, number = episode[numberKey]
+    var season = episode.season
+    var number = episode[numberKey]
     result[season] = result[season] || {}
     result[season][number] = {
       id: episode[idKey],
@@ -203,7 +204,8 @@ var buildEpisodeWalker = function (tvdbEps, kodiEps, missingEpisodes) {
 }
 
 var matchEpisodeInfo = function (title, tvdbEps, kodiEps) {
-  var missingSeasons = [], missingEpisodes = []
+  var missingSeasons = []
+  var missingEpisodes = []
   if (config.options.excludeOlder) {
     removeOldEpisodes(title, tvdbEps, kodiEps)
   }
@@ -219,7 +221,8 @@ var matchEpisodeInfo = function (title, tvdbEps, kodiEps) {
 }
 
 var processShow = function (data) {
-  var title = data.label, id = data.tvshowid
+  var title = data.label
+  var id = data.tvshowid
   events.emit('processing_show', {
     title: title,
     id: id
