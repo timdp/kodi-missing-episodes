@@ -10,15 +10,15 @@
   "dependencies": {
     "chalk": "^1.0.0",
     "js-yaml": "^3.3.0",
-    "lodash": "^3.8.0",
+    "lodash": "^4.11.1",
     "q": "^1.3.0",
     "qlimit": "^0.1.1",
     "tvdb": "0.0.13",
-    "xbmc": "^0.6.0",
-    "yargs": "^3.8.0"
+    "xbmc": "^0.6.1",
+    "yargs": "^4.6.0"
   },
   "devDependencies": {
-    "standard": "^5.4.1"
+    "standard": "^6.0.8"
   },
   "repository": "timdp/kodi-missing-episodes",
   "bugs": {
