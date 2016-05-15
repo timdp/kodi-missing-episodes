@@ -31,14 +31,13 @@ var toInt = function (str) {
   return parseInt(str, 10)
 }
 
-var isFutureDate = function (date) {
-  return (new Date(date) > new Date())
-}
-
-var filterEpisodes = function (episodes, noSpecials, noUnaired) {
+var filterEpisodes = function (episodes, includeUnaired) {
+  var now = new Date()
   return episodes.filter(function (episode) {
-    return ((!noSpecials || episode.season > 0) &&
-      (!noUnaired || !isFutureDate(episode.firstAired)))
+    var hasSeason = (episode.season > 0)
+    var hasAired = (episode.firstAired != null && episode.firstAired < now)
+    return ((!config.options.excludeSpecials || hasSeason) &&
+      (includeUnaired || hasAired))
   })
 }
 
@@ -93,8 +92,7 @@ var tvdbGetEpisodes = function (title) {
   return tvdbFindShow(title)
     .then(tvdbGetEpisodesForShow)
     .then(function (episodes) {
-      episodes = filterEpisodes(episodes, config.options.excludeSpecials,
-        !config.options.includeUnaired)
+      episodes = filterEpisodes(episodes, config.options.includeUnaired)
       return groupBySeason(episodes, 'number', 'name', 'id')
     })
 }
@@ -124,9 +122,8 @@ var kodiGetEpisodes = function (title, id) {
   return kodi.getEpisodes(title, id)
     .then(function (episodes) {
       events.emit('kodi_got_episodes', _.assign({episodes: episodes}, data))
-      episodes = filterEpisodes(episodes, config.options.excludeSpecials)
-      return groupBySeason(filterEpisodes(episodes),
-        'episode', 'originaltitle', 'episodeid')
+      episodes = filterEpisodes(episodes, true)
+      return groupBySeason(episodes, 'episode', 'originaltitle', 'episodeid')
     })
 }
 
