@@ -10,6 +10,9 @@ var EventEmitter = require('events').EventEmitter
 
 Q.longStackSupport = true
 
+var KEY_MAP_TVDB = {id: 'id', title: 'name', firstAired: 'firstAired'}
+var KEY_MAP_KODI = {id: 'episodeid', title: 'originaltitle'}
+
 var events = new EventEmitter()
 var config = require('./config.json')
 config.options = _.assign(config.options || {}, yargs.argv)
@@ -41,16 +44,19 @@ var filterEpisodes = function (episodes, includeUnaired) {
   })
 }
 
-var groupBySeason = function (episodes, numberKey, titleKey, idKey) {
+var groupBySeason = function (episodes, numberKey, keyMap) {
   var result = {}
   episodes.forEach(function (episode) {
     var season = episode.season
     var number = episode[numberKey]
     result[season] = result[season] || {}
-    result[season][number] = {
-      id: episode[idKey],
-      title: episode[titleKey]
+    var res = {}
+    for (var key in keyMap) {
+      if (keyMap.hasOwnProperty(key)) {
+        res[key] = episode[keyMap[key]]
+      }
     }
+    result[season][number] = res
   })
   return result
 }
@@ -93,7 +99,7 @@ var tvdbGetEpisodes = function (title) {
     .then(tvdbGetEpisodesForShow)
     .then(function (episodes) {
       episodes = filterEpisodes(episodes, config.options.includeUnaired)
-      return groupBySeason(episodes, 'number', 'name', 'id')
+      return groupBySeason(episodes, 'number', KEY_MAP_TVDB)
     })
 }
 
@@ -123,7 +129,7 @@ var kodiGetEpisodes = function (title, id) {
     .then(function (episodes) {
       events.emit('kodi_got_episodes', _.assign({episodes: episodes}, data))
       episodes = filterEpisodes(episodes, true)
-      return groupBySeason(episodes, 'episode', 'originaltitle', 'episodeid')
+      return groupBySeason(episodes, 'episode', KEY_MAP_KODI)
     })
 }
 
@@ -171,9 +177,21 @@ var removeOldEpisodes = function (title, tvdbEps, kodiEps) {
 var buildSeasonFilter = function (tvdbEps, kodiEps, missingSeasons) {
   return function (tvdbSeason) {
     if (!kodiEps.hasOwnProperty(tvdbSeason)) {
+      var episodeNums = Object.keys(tvdbEps[tvdbSeason])
+      var firstAired = episodeNums
+        .map(function (episodeNum) {
+          return tvdbEps[tvdbSeason][episodeNum].firstAired
+        })
+        .filter(function (firstAired) {
+          return (firstAired != null)
+        })
+        .reduce(function (prev, curr) {
+          return (curr < prev) ? curr : prev
+        })
       missingSeasons.push({
         season: tvdbSeason,
-        episodes: Object.keys(tvdbEps[tvdbSeason]).length
+        episodeCount: episodeNums.length,
+        firstAired: firstAired
       })
       return false
     } else {
@@ -183,18 +201,20 @@ var buildSeasonFilter = function (tvdbEps, kodiEps, missingSeasons) {
 }
 
 var buildEpisodeWalker = function (tvdbEps, kodiEps, missingEpisodes) {
-  return function (tvdbSeason) {
-    Object.keys(tvdbEps[tvdbSeason])
+  return function (tvdbSeasonNum) {
+    Object.keys(tvdbEps[tvdbSeasonNum])
       .map(toInt)
-      .filter(function (tvdbEpisode) {
-        return !kodiEps[tvdbSeason].hasOwnProperty(tvdbEpisode)
+      .filter(function (tvdbEpisodeNum) {
+        return !kodiEps[tvdbSeasonNum].hasOwnProperty(tvdbEpisodeNum)
       })
       .sort(compareNum)
-      .forEach(function (tvdbEpisode) {
+      .forEach(function (tvdbEpisodeNum) {
+        var tvdbEpisode = tvdbEps[tvdbSeasonNum][tvdbEpisodeNum]
         missingEpisodes.push({
-          season: tvdbSeason,
-          number: tvdbEpisode,
-          title: tvdbEps[tvdbSeason][tvdbEpisode].title
+          season: tvdbSeasonNum,
+          number: tvdbEpisodeNum,
+          title: tvdbEpisode.title,
+          firstAired: tvdbEpisode.firstAired
         })
       })
   }
