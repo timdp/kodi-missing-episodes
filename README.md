@@ -1,14 +1,14 @@
 # kodi-missing-episodes
 
-[![JavaScript Standard Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](https://github.com/feross/standard)
+[![JavaScript Standard Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](https://standardjs.com/)
 
 Checks your Kodi (XBMC) TV library for missing episodes using TheTVDB.com.
 
 ## Requirements
 
-* [Node.js](http://nodejs.org/)
+* [Node.js](https://nodejs.org/)
 * Kodi with the [JSON-RPC API enabled](http://kodi.wiki/view/JSON-RPC_API#Enabling_JSON-RPC)
-* An API key for [TheTVDB.com](http://thetvdb.com/)
+* API credentials for [TheTVDB.com](https://thetvdb.com/)
 
 ## Installation
 

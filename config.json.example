@@ -1,6 +1,8 @@
 {
   "tvdb": {
-    "apiKey": "YOUR_API_KEY"
+    "apiKey": "YOUR_API_KEY",
+    "username": "YOUR_USERNAME",
+    "userKey": "YOUR_USER_KEY"
   },
   "kodi": {
     "host": "127.0.0.1",
