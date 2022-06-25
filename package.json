@@ -1,48 +1,38 @@
 {
   "name": "kodi-missing-episodes",
-  "version": "0.5.1",
-  "description": "Checks your Kodi (XBMC) TV library for missing episodes using TheTVDB.com.",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "license": "MIT",
-  "repository": "https://github.com/timdp/kodi-missing-episodes",
-  "author": {
-    "name": "Tim De Pauw",
-    "url": "https://tmdpw.eu/"
-  },
-  "engines": {
-    "node": ">=12"
-  },
-  "main": "kodi-missing-episodes.js",
   "scripts": {
-    "start": "node kodi-missing-episodes.js",
-    "test": "standard \"**/*.js\"",
-    "format": "prettier-standard \"**/*.js\" && standard --fix \"**/*.js\""
+    "start": "node bin/cli.js",
+    "test": "yarn run lint",
+    "lint": "eslint \"**/*.js\"",
+    "format": "prettier-eslint --write \"$PWD/**/*.js\"",
+    "prepare": "husky install"
   },
   "dependencies": {
-    "chalk": "^4.0.0",
-    "got": "^11.1.0",
-    "js-yaml": "^3.6.1",
-    "lodash": "^4.15.0",
-    "moment": "^2.18.0",
-    "q": "^1.4.1",
-    "qlimit": "^0.1.1",
-    "xbmc": "^0.8.0",
-    "yargs": "^15.3.1"
+    "chalk": "^5.0.1",
+    "configstore": "^6.0.0",
+    "open": "^8.4.0",
+    "p-map": "^5.5.0",
+    "trakt.tv": "^8.1.1",
+    "xbmc": "^0.8.0"
   },
   "devDependencies": {
-    "husky": "^4.2.5",
-    "lint-staged": "^10.2.2",
-    "prettier-standard": "^16.3.0",
-    "standard": "^14.3.3"
+    "eslint": "^8.18.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.3",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier-eslint-cli": "^6.0.1"
   },
   "lint-staged": {
     "*.js": [
-      "prettier-standard",
-      "standard --fix"
+      "prettier-eslint --write"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   }
 }
