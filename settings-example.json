@@ -7,9 +7,13 @@
   },
   "trakt": {
     "clientId": "...",
-    "clientSecret": "..."
+    "clientSecret": "...",
+    "maxCacheAge": "1h"
   },
   "newerOnly": true,
   "ignoreSpecials": true,
-  "ignoreUnaired": true
+  "ignoreUnaired": true,
+  "concurrency": 1,
+  "output": "text",
+  "verbose": true
 }

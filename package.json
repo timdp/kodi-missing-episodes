@@ -5,17 +5,24 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "node bin/cli.js",
+    "start": "node --no-warnings bin/cli.js",
     "test": "yarn run lint",
     "lint": "eslint \"**/*.js\"",
     "format": "prettier-eslint --write \"$PWD/**/*.js\"",
     "prepare": "husky install"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "chalk": "^5.0.1",
     "configstore": "^6.0.0",
+    "minimist": "^1.2.6",
     "open": "^8.4.0",
+    "ora": "^6.1.1",
     "p-map": "^5.5.0",
+    "parse-duration": "^1.0.2",
+    "terminal-link": "^3.0.0",
     "trakt.tv": "^8.1.1",
     "xbmc": "^0.8.0"
   },
