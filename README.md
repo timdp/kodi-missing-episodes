@@ -15,14 +15,14 @@ Checks your Kodi TV library for missing episodes using Trakt.
 ```bash
 $ git clone https://github.com/timdp/kodi-missing-episodes.git
 $ cd kodi-missing-episodes
-$ yarn
+$ npm install
 ```
 
 ## Usage
 
 1. Copy `settings-example.json` to `settings.json`
 2. Enter your credentials for Kodi and Trakt in `settings.json`
-3. Run `yarn start`
+3. Run `npm start`
 
 ## Author
 
