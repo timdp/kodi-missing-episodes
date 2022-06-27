@@ -2,13 +2,32 @@
 import xbmc from 'xbmc'
 
 import { KodiEpisode } from './KodiEpisode'
+import { KodiOptions } from './KodiOptions'
 import { KodiShow } from './KodiShow'
 
+type UniqueId = {
+  imdb?: string
+}
+
+type ShowInfo = {
+  tvshowid: number
+  title: string
+  uniqueid?: UniqueId
+}
+
+type EpisodeInfo = {
+  episodeid: number
+  title: string
+  season: number
+  episode: number
+  uniqueid?: UniqueId
+}
+
 export class KodiClient {
-  #options: Record<string, any>
+  #options: KodiOptions
   #api: any
 
-  constructor (options: Record<string, any>) {
+  constructor (options: KodiOptions) {
     this.#options = options
   }
 
@@ -35,31 +54,27 @@ export class KodiClient {
   }
 
   async listShows () {
-    const shows: Record<string, any>[] = await this.#api.media.tvshows({
-      properties: ['uniqueid']
+    const shows: ShowInfo[] = await this.#api.media.tvshows({
+      properties: ['uniqueid', 'title']
     })
     return shows.map(
-      ({ tvshowid, label, uniqueid }) =>
-        new KodiShow(tvshowid, uniqueid?.imdb?.trim(), label)
+      ({ tvshowid, title, uniqueid }) =>
+        new KodiShow(tvshowid, uniqueid?.imdb?.trim(), title)
     )
   }
 
   async listShowEpisodes (id: number) {
-    const episodes: Record<string, any>[] = await this.#api.media.episodes(
-      id,
-      null,
-      {
-        properties: ['uniqueid', 'season', 'episode']
-      }
-    )
+    const episodes: EpisodeInfo[] = await this.#api.media.episodes(id, null, {
+      properties: ['uniqueid', 'season', 'episode', 'title']
+    })
     return episodes.map(
-      ({ episodeid, label, season, episode, uniqueid }) =>
+      ({ episodeid, title, season, episode, uniqueid }) =>
         new KodiEpisode(
           episodeid,
           uniqueid?.imdb?.trim(),
           season,
           episode,
-          label
+          title
         )
     )
   }

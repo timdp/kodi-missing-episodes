@@ -9,8 +9,14 @@ import { KodiShow } from '../kodi/KodiShow'
 import { TraktEpisode } from '../trakt/TraktEpisode'
 import { buildImdbUrl } from '../util/buildImdbUrl'
 
+type PropValue = string | number
+
+type Props = Record<string, PropValue>
+
+type Data = Record<string, Record<string, PropValue | Props[]>[]>
+
 export class StructuredReporter extends Reporter {
-  #data: Record<string, Record<string, any>> = {
+  #data: Data = {
     showsWithoutImdbId: [],
     showsNotFoundOnTrakt: [],
     showsWithMissingEpisodes: [],
@@ -63,10 +69,10 @@ export class StructuredReporter extends Reporter {
     this.#data.showsWithMissingEpisodes.push({
       ...this.#showToJson(kodiShow),
       episodesNotFoundOnTrakt: episodesNotFoundOnTrakt.map((kodiEpisode) =>
-        this.#episodeToJson(kodiEpisode, false)
+        this.#episodeToJson(kodiEpisode)
       ),
       episodesNotFoundInKodi: episodesNotFoundInKodi.map((traktEpisode) =>
-        this.#episodeToJson(traktEpisode, true)
+        this.#traktEpisodeToJson(traktEpisode)
       )
     })
   }
@@ -95,7 +101,7 @@ export class StructuredReporter extends Reporter {
   }
 
   #showToJson (kodiShow: KodiShow) {
-    const json: Record<string, any> = {
+    const json: Props = {
       title: kodiShow.title,
       id: kodiShow.id
     }
@@ -105,8 +111,16 @@ export class StructuredReporter extends Reporter {
     return json
   }
 
-  #episodeToJson (episode: Episode, isTraktEpisode: boolean) {
-    const json: Record<string, any> = {
+  #traktEpisodeToJson (episode: TraktEpisode) {
+    const json = this.#episodeToJson(episode)
+    if (episode.firstAired != null) {
+      json.firstAired = episode.firstAired.toISOString()
+    }
+    return json
+  }
+
+  #episodeToJson (episode: Episode) {
+    const json: Props = {
       seasonNumber: episode.seasonNumber,
       episodeNumber: episode.episodeNumber,
       title: episode.title,
@@ -114,12 +128,6 @@ export class StructuredReporter extends Reporter {
     }
     if (episode.imdbId != null) {
       json.imdbUrl = buildImdbUrl(episode.imdbId)
-    }
-    if (isTraktEpisode) {
-      const { firstAired } = episode as TraktEpisode
-      if (firstAired != null) {
-        json.firstAired = firstAired.toISOString()
-      }
     }
     return json
   }

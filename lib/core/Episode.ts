@@ -1,13 +1,13 @@
 export class Episode {
   #id: number
-  #imdbId: string
+  #imdbId?: string
   #seasonNumber: number
   #episodeNumber: number
   #title: string
 
   constructor (
     id: number,
-    imdbId: string,
+    imdbId: string | undefined,
     seasonNumber: number,
     episodeNumber: number,
     title: string
@@ -37,12 +37,5 @@ export class Episode {
 
   get title () {
     return this.#title
-  }
-
-  equals (other: Episode) {
-    return this.#imdbId != null && other.#imdbId != null
-      ? this.#imdbId === other.#imdbId
-      : this.#seasonNumber === other.#seasonNumber &&
-          this.#episodeNumber === other.#episodeNumber
   }
 }

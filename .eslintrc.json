@@ -3,9 +3,6 @@
   "env": {
     "node": true
   },
-  "ignorePatterns": [
-    "**/node_modules/*"
-  ],
   "extends": [
     "standard"
   ],
@@ -18,7 +15,9 @@
   },
   "overrides": [
     {
-      "files": ["**/*.ts"],
+      "files": [
+        "**/*.ts"
+      ],
       "parser": "@typescript-eslint/parser",
       "extends": [
         "plugin:@typescript-eslint/recommended",

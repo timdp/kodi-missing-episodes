@@ -2,18 +2,18 @@ import { KodiEpisode } from '../kodi/KodiEpisode'
 import { KodiShow } from '../kodi/KodiShow'
 import { TraktEpisode } from '../trakt/TraktEpisode'
 
-export class Reporter {
-  #options: Record<string, any>
+type Options = Record<string, any>
 
-  constructor (options: Record<string, any>) {
+export class Reporter {
+  #options: Options
+
+  constructor (options: Options) {
     this.#options = options
   }
 
   get options () {
     return this.#options
   }
-
-  onStart () {}
 
   onListKodiShows () {}
 

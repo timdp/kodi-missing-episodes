@@ -1,9 +1,9 @@
 export class Show {
   #id: number
-  #imdbId: string
+  #imdbId?: string
   #title: string
 
-  constructor (id: number, imdbId: string, title: string) {
+  constructor (id: number, imdbId: string | undefined, title: string) {
     this.#id = id
     this.#imdbId = imdbId
     this.#title = title

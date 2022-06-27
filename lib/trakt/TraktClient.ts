@@ -5,20 +5,36 @@ import Trakt from 'trakt.tv'
 
 import { config } from '../core/config'
 import { TraktEpisode } from './TraktEpisode'
+import { TraktOptions } from './TraktOptions'
 import { TraktShow } from './TraktShow'
 
-type ShowInfo = {
-  id?: number
-  title?: string
-  seasons?: { episodes: Record<string, any>[] }[]
+type EpisodeInfo = {
+  ids: {
+    trakt: number
+    imdb: string
+  }
+  season: number
+  number: number
+  title: string
+  first_aired: string
 }
 
+type ShowInfo = {
+  id: number
+  title: string
+  seasons: {
+    episodes: EpisodeInfo[]
+  }[]
+}
+
+type Empty = Record<string, never>
+
 export class TraktClient {
-  #options: Record<string, any>
+  #options: TraktOptions
   #maxCacheAge: number
   #api: any
 
-  constructor (options: Record<string, any>) {
+  constructor (options: TraktOptions) {
     this.#options = options
     this.#maxCacheAge =
       options.maxCacheAge != null ? parseDuration(options.maxCacheAge) : -1
@@ -49,10 +65,11 @@ export class TraktClient {
   }
 
   async getShowByImdbId (imdbId: string) {
-    const { id, title, seasons } = await this.#cachedGetShowByImdbId(imdbId)
-    if (id == null || title == null || seasons == null) {
+    const info = await this.#cachedGetShowByImdbId(imdbId)
+    if (!Reflect.has(info, 'id')) {
       return null
     }
+    const { id, title, seasons } = info as ShowInfo
     return new TraktShow(
       id,
       title,
@@ -67,7 +84,7 @@ export class TraktClient {
                 season,
                 number,
                 title,
-                firstAired != null ? new Date(firstAired) : null
+                firstAired != null ? new Date(firstAired) : undefined
               )
           )
         )
@@ -75,7 +92,7 @@ export class TraktClient {
     )
   }
 
-  async #cachedGetShowByImdbId (imdbId: string): Promise<ShowInfo> {
+  async #cachedGetShowByImdbId (imdbId: string): Promise<ShowInfo | Empty> {
     const key = 'trakt.showCache.' + imdbId
     const entry = config.get(key)
     if (
@@ -93,7 +110,7 @@ export class TraktClient {
     return data
   }
 
-  async #uncachedGetShowByImdbId (imdbId: string): Promise<ShowInfo> {
+  async #uncachedGetShowByImdbId (imdbId: string): Promise<ShowInfo | Empty> {
     const [result] = await this.#api.search.id({
       id_type: 'imdb',
       id: imdbId

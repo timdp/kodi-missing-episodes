@@ -40,52 +40,33 @@ export class ConsoleReporter extends Reporter {
     episodesNotFoundInKodi: readonly TraktEpisode[]
   ) {
     console.info(chalk.bold(kodiShow.title))
-    this.#maybePrintInconsistencies(
-      'Not found on Trakt',
-      episodesNotFoundOnTrakt,
-      false
-    )
-    this.#maybePrintInconsistencies(
-      'Missing from Kodi',
-      episodesNotFoundInKodi,
-      true
-    )
+    this.#reportInconsistencies('Not found on Trakt', episodesNotFoundOnTrakt)
+    this.#reportInconsistencies('Missing from Kodi', episodesNotFoundInKodi)
     console.info()
   }
 
-  #maybePrintInconsistencies (
-    title: string,
-    missingEpisodes: readonly Episode[],
-    fromTrakt: boolean
-  ) {
+  #reportInconsistencies (title: string, missingEpisodes: readonly Episode[]) {
     if (missingEpisodes.length === 0) {
       return
     }
     console.info(INDENT1 + chalk.underline(title))
     for (const episode of missingEpisodes) {
-      console.info(
-        INDENT2 + chalk.yellow(this.#episodeToString(episode, fromTrakt))
-      )
+      console.info(INDENT2 + chalk.yellow(this.#episodeToString(episode)))
     }
   }
 
-  #episodeToString (episode: Episode, isTraktEpisode: boolean) {
+  #episodeToString (episode: Episode) {
+    const episodeNumberPadded = String(episode.episodeNumber).padStart(2, '0')
+    const prefix = `${episode.seasonNumber}x${episodeNumberPadded}. `
     const info = [`ID: ${episode.id}`]
     if (episode.imdbId != null) {
-      info.push(
-        'IMDB: ' + terminalLink(episode.imdbId, buildImdbUrl(episode.imdbId))
-      )
+      const url = buildImdbUrl(episode.imdbId)
+      info.push('IMDB: ' + terminalLink(episode.imdbId, url))
     }
-    let prefix = ''
-    if (isTraktEpisode) {
-      const { seasonNumber, episodeNumber, firstAired } =
-        episode as TraktEpisode
-      const episodeNumberPadded = String(episodeNumber).padStart(2, '0')
-      prefix = `${seasonNumber}x${episodeNumberPadded}. `
-      if (firstAired != null) {
-        info.push('Aired: ' + firstAired.toLocaleDateString('en-US'))
-      }
+    if (episode instanceof TraktEpisode && episode.firstAired != null) {
+      info.push('Aired: ' + episode.firstAired.toLocaleDateString('en-US'))
     }
-    return prefix + episode.title + chalk.dim(SEPARATOR + info.join(SEPARATOR))
+    const suffix = SEPARATOR + info.join(SEPARATOR)
+    return chalk.bold(prefix) + episode.title + chalk.dim(suffix)
   }
 }
