@@ -1,14 +1,22 @@
 import pMap from 'p-map'
 
-import { KodiClient } from '../lib/kodi/KodiClient.js'
-import { TraktClient } from '../lib/trakt/TraktClient.js'
-import { cullArray } from './util/cullArray.js'
+import { KodiClient } from '../lib/kodi/KodiClient'
+import { TraktClient } from '../lib/trakt/TraktClient'
+import { Episode } from './core/Episode'
+import { Reporter } from './core/Reporter'
+import { KodiEpisode } from './kodi/KodiEpisode'
+import { KodiShow } from './kodi/KodiShow'
+import { TraktEpisode } from './trakt/TraktEpisode'
+import { cullArray } from './util/cullArray'
 
-const removeSpecials = (episodes) => {
+const removeSpecials = (episodes: Episode[]) => {
   cullArray(episodes, (episode) => episode.seasonNumber !== 0)
 }
 
-const removeOlderEpisodes = (episodes, referenceEpisode) => {
+const removeOlderEpisodes = (
+  episodes: TraktEpisode[],
+  referenceEpisode: KodiEpisode
+) => {
   cullArray(
     episodes,
     (episode) =>
@@ -18,7 +26,7 @@ const removeOlderEpisodes = (episodes, referenceEpisode) => {
   )
 }
 
-const removeUnairedEpisodes = (traktEpisodes) => {
+const removeUnairedEpisodes = (traktEpisodes: TraktEpisode[]) => {
   const now = new Date()
   cullArray(
     traktEpisodes,
@@ -27,7 +35,11 @@ const removeUnairedEpisodes = (traktEpisodes) => {
   )
 }
 
-const applySettings = (kodiEpisodes, traktEpisodes, settings) => {
+const applySettings = (
+  kodiEpisodes: KodiEpisode[],
+  traktEpisodes: TraktEpisode[],
+  settings: Record<string, any>
+) => {
   if (settings.ignoreSpecials) {
     removeSpecials(kodiEpisodes)
     removeSpecials(traktEpisodes)
@@ -40,21 +52,27 @@ const applySettings = (kodiEpisodes, traktEpisodes, settings) => {
   }
 }
 
-const sortByTitle = (shows) => {
+const sortByTitle = (shows: KodiShow[]) => {
   shows.sort((showA, showB) =>
     showA.title.toLowerCase().localeCompare(showB.title.toLowerCase())
   )
 }
 
-const intersect = (completeEpisodes, incompleteEpisodes) =>
-  completeEpisodes.filter(
-    (sourceEpisode) =>
-      !incompleteEpisodes.some((referenceEpisode) =>
-        referenceEpisode.equals(sourceEpisode)
-      )
-  )
+const intersect = <T1 extends Episode, T2 extends Episode>(
+  completeEpisodes: T1[],
+  incompleteEpisodes: T2[]
+) =>
+    completeEpisodes.filter(
+      (sourceEpisode) =>
+        !incompleteEpisodes.some((referenceEpisode) =>
+          referenceEpisode.equals(sourceEpisode)
+        )
+    )
 
-export const run = async (settings, reporter) => {
+export const run = async (
+  settings: Record<string, any>,
+  reporter: Reporter
+) => {
   reporter.onStart()
 
   const kodiClient = new KodiClient(settings.kodi)
@@ -86,7 +104,7 @@ export const run = async (settings, reporter) => {
         reporter.onShowNotFoundOnTrakt(kodiShow)
         return
       }
-      const traktEpisodes = traktShow.episodes
+      const traktEpisodes = traktShow.episodes.slice()
       applySettings(kodiEpisodes, traktEpisodes, settings)
       const episodesNotFoundOnTrakt = intersect(kodiEpisodes, traktEpisodes)
       const episodesNotFoundInKodi = intersect(traktEpisodes, kodiEpisodes)

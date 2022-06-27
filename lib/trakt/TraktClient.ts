@@ -1,17 +1,24 @@
 import open from 'open'
 import parseDuration from 'parse-duration'
+// @ts-ignore
 import Trakt from 'trakt.tv'
 
-import { config } from '../core/config.js'
-import { TraktEpisode } from './TraktEpisode.js'
-import { TraktShow } from './TraktShow.js'
+import { config } from '../core/config'
+import { TraktEpisode } from './TraktEpisode'
+import { TraktShow } from './TraktShow'
+
+type ShowInfo = {
+  id?: number
+  title?: string
+  seasons?: { episodes: Record<string, any>[] }[]
+}
 
 export class TraktClient {
-  #options
-  #maxCacheAge
-  #api
+  #options: Record<string, any>
+  #maxCacheAge: number
+  #api: any
 
-  constructor (options) {
+  constructor (options: Record<string, any>) {
     this.#options = options
     this.#maxCacheAge =
       options.maxCacheAge != null ? parseDuration(options.maxCacheAge) : -1
@@ -41,9 +48,9 @@ export class TraktClient {
     config.set(key, token)
   }
 
-  async getShowByImdbId (imdbId) {
+  async getShowByImdbId (imdbId: string) {
     const { id, title, seasons } = await this.#cachedGetShowByImdbId(imdbId)
-    if (id == null) {
+    if (id == null || title == null || seasons == null) {
       return null
     }
     return new TraktShow(
@@ -68,7 +75,7 @@ export class TraktClient {
     )
   }
 
-  async #cachedGetShowByImdbId (imdbId) {
+  async #cachedGetShowByImdbId (imdbId: string): Promise<ShowInfo> {
     const key = 'trakt.showCache.' + imdbId
     const entry = config.get(key)
     if (
@@ -86,7 +93,7 @@ export class TraktClient {
     return data
   }
 
-  async #uncachedGetShowByImdbId (imdbId) {
+  async #uncachedGetShowByImdbId (imdbId: string): Promise<ShowInfo> {
     const [result] = await this.#api.search.id({
       id_type: 'imdb',
       id: imdbId

@@ -1,10 +1,14 @@
-import ora from 'ora'
+import ora, { Ora } from 'ora'
 
-import { Reporter } from '../core/Reporter.js'
-import { buildImdbUrl } from '../util/buildImdbUrl.js'
+import { Episode } from '../core/Episode'
+import { Reporter } from '../core/Reporter'
+import { KodiEpisode } from '../kodi/KodiEpisode'
+import { KodiShow } from '../kodi/KodiShow'
+import { TraktEpisode } from '../trakt/TraktEpisode'
+import { buildImdbUrl } from '../util/buildImdbUrl'
 
 export class JsonReporter extends Reporter {
-  #data = {
+  #data: Record<string, Record<string, any>> = {
     showsWithoutImdbId: [],
     showsNotFoundOnTrakt: [],
     showsWithMissingEpisodes: [],
@@ -13,8 +17,7 @@ export class JsonReporter extends Reporter {
 
   #totalCount = 0
   #processedCount = 0
-  #activeCount = 0
-  #spinner
+  #spinner?: Ora
 
   onListKodiShows () {
     if (this.options.verbose) {
@@ -25,36 +28,34 @@ export class JsonReporter extends Reporter {
     }
   }
 
-  onProcessShows (kodiShows) {
+  onProcessShows (kodiShows: readonly KodiShow[]) {
     this.#totalCount = kodiShows.length
     this.#updateStatus()
   }
 
-  onListShowEpisodes (kodiShow) {
-    this.#activeCount++
+  onListShowEpisodes (kodiShow: KodiShow) {
     this.#updateStatus()
   }
 
-  onShowWithoutImdbId (kodiShow) {
-    this.#activeCount--
+  onShowWithoutImdbId (kodiShow: KodiShow) {
     this.#updateStatus()
     this.#data.showsWithoutImdbId.push(this.#showToJson(kodiShow))
   }
 
-  onShowNotFoundOnTrakt (kodiShow) {
+  onShowNotFoundOnTrakt (kodiShow: KodiShow) {
     this.#onShowProcessed()
     this.#data.showsNotFoundOnTrakt.push(this.#showToJson(kodiShow))
   }
 
-  onShowConsistent (kodiShow) {
+  onShowConsistent (kodiShow: KodiShow) {
     this.#onShowProcessed()
     this.#data.showsWithoutMissingEpisodes.push(this.#showToJson(kodiShow))
   }
 
   onShowInconsistent (
-    kodiShow,
-    episodesNotFoundOnTrakt,
-    episodesNotFoundInKodi
+    kodiShow: KodiShow,
+    episodesNotFoundOnTrakt: readonly KodiEpisode[],
+    episodesNotFoundInKodi: readonly TraktEpisode[]
   ) {
     this.#onShowProcessed()
     this.#data.showsWithMissingEpisodes.push({
@@ -75,7 +76,6 @@ export class JsonReporter extends Reporter {
 
   #onShowProcessed () {
     this.#processedCount++
-    this.#activeCount--
     this.#updateStatus()
   }
 
@@ -88,8 +88,8 @@ export class JsonReporter extends Reporter {
     this.#spinner.text = `${processed}/${total} shows processed`
   }
 
-  #showToJson (kodiShow) {
-    const json = {
+  #showToJson (kodiShow: KodiShow) {
+    const json: Record<string, any> = {
       title: kodiShow.title,
       id: kodiShow.id
     }
@@ -99,8 +99,8 @@ export class JsonReporter extends Reporter {
     return json
   }
 
-  #episodeToJson (episode, isTraktEpisode) {
-    const json = {
+  #episodeToJson (episode: Episode, isTraktEpisode: boolean) {
+    const json: Record<string, any> = {
       seasonNumber: episode.seasonNumber,
       episodeNumber: episode.episodeNumber,
       title: episode.title,
@@ -109,8 +109,11 @@ export class JsonReporter extends Reporter {
     if (episode.imdbId != null) {
       json.imdbUrl = buildImdbUrl(episode.imdbId)
     }
-    if (isTraktEpisode && episode.firstAired != null) {
-      json.firstAired = episode.firstAired.toISOString()
+    if (isTraktEpisode) {
+      const { firstAired } = episode as TraktEpisode
+      if (firstAired != null) {
+        json.firstAired = firstAired.toISOString()
+      }
     }
     return json
   }

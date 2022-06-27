@@ -1,13 +1,14 @@
+// @ts-ignore
 import xbmc from 'xbmc'
 
-import { KodiEpisode } from './KodiEpisode.js'
-import { KodiShow } from './KodiShow.js'
+import { KodiEpisode } from './KodiEpisode'
+import { KodiShow } from './KodiShow'
 
 export class KodiClient {
-  #options
-  #api
+  #options: Record<string, any>
+  #api: any
 
-  constructor (options) {
+  constructor (options: Record<string, any>) {
     this.#options = options
   }
 
@@ -34,7 +35,7 @@ export class KodiClient {
   }
 
   async listShows () {
-    const shows = await this.#api.media.tvshows({
+    const shows: Record<string, any>[] = await this.#api.media.tvshows({
       properties: ['uniqueid']
     })
     return shows.map(
@@ -43,10 +44,14 @@ export class KodiClient {
     )
   }
 
-  async listShowEpisodes (id) {
-    const episodes = await this.#api.media.episodes(id, null, {
-      properties: ['uniqueid', 'season', 'episode']
-    })
+  async listShowEpisodes (id: number) {
+    const episodes: Record<string, any>[] = await this.#api.media.episodes(
+      id,
+      null,
+      {
+        properties: ['uniqueid', 'season', 'episode']
+      }
+    )
     return episodes.map(
       ({ episodeid, label, season, episode, uniqueid }) =>
         new KodiEpisode(

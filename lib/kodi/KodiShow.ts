@@ -1,3 +1,3 @@
-import { Show } from '../core/Show.js'
+import { Show } from '../core/Show'
 
 export class KodiShow extends Show {}

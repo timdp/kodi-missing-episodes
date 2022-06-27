@@ -1,0 +1,11 @@
+{
+  "extends": "ts-node/node14/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "resolveJsonModule": true
+  },
+  "ts-node": {
+    "transpileOnly": true
+  }
+}

@@ -2,17 +2,17 @@
   "name": "kodi-missing-episodes",
   "version": "0.6.1",
   "private": true,
-  "type": "module",
   "license": "MIT",
+  "type": "module",
   "scripts": {
-    "start": "node --no-warnings bin/cli.js",
+    "start": "node --no-warnings --loader ts-node/esm --experimental-specifier-resolution=node bin/cli.ts",
     "test": "yarn run lint",
-    "lint": "eslint \"**/*.js\"",
-    "format": "prettier-eslint --write \"$PWD/**/*.js\"",
+    "lint": "eslint \"**/*.ts\"",
+    "format": "prettier-eslint --write \"$PWD/**/*.ts\"",
     "prepare": "husky install"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=14"
   },
   "dependencies": {
     "chalk": "^5.0.1",
@@ -24,9 +24,15 @@
     "parse-duration": "^1.0.2",
     "terminal-link": "^3.0.0",
     "trakt.tv": "^8.1.1",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4",
     "xbmc": "^0.8.0"
   },
   "devDependencies": {
+    "@types/configstore": "^5.0.1",
+    "@types/minimist": "^1.2.2",
+    "@typescript-eslint/eslint-plugin": "^5.29.0",
+    "@typescript-eslint/parser": "^5.29.0",
     "eslint": "^8.18.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -38,7 +44,7 @@
     "prettier-eslint-cli": "^6.0.1"
   },
   "lint-staged": {
-    "*.js": [
+    "*.ts": [
       "prettier-eslint --write"
     ]
   }

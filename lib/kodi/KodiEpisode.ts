@@ -1,3 +1,3 @@
-import { Episode } from '../core/Episode.js'
+import { Episode } from '../core/Episode'
 
 export class KodiEpisode extends Episode {}
