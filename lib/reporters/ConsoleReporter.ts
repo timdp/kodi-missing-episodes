@@ -40,29 +40,33 @@ export class ConsoleReporter extends Reporter {
     episodesNotFoundInKodi: readonly TraktEpisode[]
   ) {
     console.info(chalk.bold(kodiShow.title))
-    for (const { title, missingEpisodes, fromTrakt } of [
-      {
-        title: 'Not found on Trakt',
-        missingEpisodes: episodesNotFoundOnTrakt,
-        fromTrakt: false
-      },
-      {
-        title: 'Missing from Kodi',
-        missingEpisodes: episodesNotFoundInKodi,
-        fromTrakt: true
-      }
-    ]) {
-      if (missingEpisodes.length === 0) {
-        continue
-      }
-      console.info(INDENT1 + chalk.underline(title))
-      for (const episode of missingEpisodes) {
-        console.info(
-          INDENT2 + chalk.yellow(this.#episodeToString(episode, fromTrakt))
-        )
-      }
-    }
+    this.#maybePrintInconsistencies(
+      'Not found on Trakt',
+      episodesNotFoundOnTrakt,
+      false
+    )
+    this.#maybePrintInconsistencies(
+      'Missing from Kodi',
+      episodesNotFoundInKodi,
+      true
+    )
     console.info()
+  }
+
+  #maybePrintInconsistencies (
+    title: string,
+    missingEpisodes: readonly Episode[],
+    fromTrakt: boolean
+  ) {
+    if (missingEpisodes.length === 0) {
+      return
+    }
+    console.info(INDENT1 + chalk.underline(title))
+    for (const episode of missingEpisodes) {
+      console.info(
+        INDENT2 + chalk.yellow(this.#episodeToString(episode, fromTrakt))
+      )
+    }
   }
 
   #episodeToString (episode: Episode, isTraktEpisode: boolean) {
@@ -74,12 +78,10 @@ export class ConsoleReporter extends Reporter {
     }
     let prefix = ''
     if (isTraktEpisode) {
-      prefix =
-        episode.seasonNumber +
-        'x' +
-        String(episode.episodeNumber).padStart(2, '0') +
-        '. '
-      const { firstAired } = episode as TraktEpisode
+      const { seasonNumber, episodeNumber, firstAired } =
+        episode as TraktEpisode
+      const episodeNumberPadded = String(episodeNumber).padStart(2, '0')
+      prefix = `${seasonNumber}x${episodeNumberPadded}. `
       if (firstAired != null) {
         info.push('Aired: ' + firstAired.toLocaleDateString('en-US'))
       }

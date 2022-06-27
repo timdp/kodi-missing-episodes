@@ -14,6 +14,6 @@
   "ignoreSpecials": true,
   "ignoreUnaired": true,
   "concurrency": 1,
-  "output": "text",
+  "format": "text",
   "verbose": true
 }

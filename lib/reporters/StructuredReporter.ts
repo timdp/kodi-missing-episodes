@@ -1,3 +1,5 @@
+import YAML from 'js-yaml'
+import { EOL } from 'node:os'
 import ora, { Ora } from 'ora'
 
 import { Episode } from '../core/Episode'
@@ -7,7 +9,7 @@ import { KodiShow } from '../kodi/KodiShow'
 import { TraktEpisode } from '../trakt/TraktEpisode'
 import { buildImdbUrl } from '../util/buildImdbUrl'
 
-export class JsonReporter extends Reporter {
+export class StructuredReporter extends Reporter {
   #data: Record<string, Record<string, any>> = {
     showsWithoutImdbId: [],
     showsNotFoundOnTrakt: [],
@@ -71,7 +73,11 @@ export class JsonReporter extends Reporter {
 
   onComplete () {
     this.#spinner?.succeed()
-    console.log(JSON.stringify(this.#data, null, 2))
+    process.stdout.write(
+      this.options.format === 'yaml'
+        ? YAML.dump(this.#data)
+        : JSON.stringify(this.#data, null, 2) + EOL
+    )
   }
 
   #onShowProcessed () {
