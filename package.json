@@ -21,7 +21,7 @@
     "js-yaml": "^4.1.0",
     "minimist": "^1.2.6",
     "open": "^8.4.0",
-    "ora": "^6.1.1",
+    "ora": "^6.1.2",
     "p-map": "^5.5.0",
     "parse-duration": "^1.0.2",
     "terminal-link": "^3.0.0",

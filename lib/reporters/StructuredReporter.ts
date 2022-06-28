@@ -29,10 +29,7 @@ export class StructuredReporter extends Reporter {
 
   onListKodiShows () {
     if (this.options.verbose) {
-      this.#spinner = ora({
-        text: 'Listing shows',
-        discardStdin: false
-      }).start()
+      this.#spinner = ora('Listing shows').start()
     }
   }
 

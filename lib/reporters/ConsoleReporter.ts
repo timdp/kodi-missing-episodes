@@ -14,24 +14,17 @@ const SEPARATOR = ' · '
 
 export class ConsoleReporter extends Reporter {
   onShowWithoutImdbId (kodiShow: KodiShow) {
-    console.info(chalk.bold(kodiShow.title))
-    console.info(INDENT1 + chalk.red('Show IMDB ID unknown'))
-    console.info()
+    this.#printShowError(kodiShow, 'Show IMDB ID unknown')
   }
 
   onShowNotFoundOnTrakt (kodiShow: KodiShow) {
-    console.info(chalk.bold(kodiShow.title))
-    console.info(INDENT1 + chalk.red('Show not found on Trakt'))
-    console.info()
+    this.#printShowError(kodiShow, 'Show not found on Trakt')
   }
 
   onShowConsistent (kodiShow: KodiShow) {
-    if (!this.options.verbose) {
-      return
+    if (this.options.verbose) {
+      this.#printShowBlock(kodiShow, 'Looking good', chalk.green)
     }
-    console.info(chalk.bold(kodiShow.title))
-    console.info(INDENT1 + chalk.green('Looking good'))
-    console.info()
   }
 
   onShowInconsistent (
@@ -39,10 +32,10 @@ export class ConsoleReporter extends Reporter {
     episodesNotFoundOnTrakt: readonly KodiEpisode[],
     episodesNotFoundInKodi: readonly TraktEpisode[]
   ) {
-    console.info(chalk.bold(kodiShow.title))
+    this.#startShowBlock(kodiShow)
     this.#reportInconsistencies('Not found on Trakt', episodesNotFoundOnTrakt)
     this.#reportInconsistencies('Missing from Kodi', episodesNotFoundInKodi)
-    console.info()
+    this.#endShowBlock()
   }
 
   #reportInconsistencies (title: string, missingEpisodes: readonly Episode[]) {
@@ -68,5 +61,27 @@ export class ConsoleReporter extends Reporter {
     }
     const suffix = SEPARATOR + info.join(SEPARATOR)
     return chalk.bold(prefix) + episode.title + chalk.dim(suffix)
+  }
+
+  #printShowError (kodiShow: KodiShow, text: string) {
+    this.#printShowBlock(kodiShow, text, chalk.red)
+  }
+
+  #printShowBlock (
+    kodiShow: KodiShow,
+    text: string,
+    format: (text: any[]) => string
+  ) {
+    this.#startShowBlock(kodiShow)
+    console.info(INDENT1 + chalk.green(text))
+    this.#endShowBlock()
+  }
+
+  #startShowBlock (kodiShow: KodiShow) {
+    console.info(chalk.bold(kodiShow.title))
+  }
+
+  #endShowBlock () {
+    console.info()
   }
 }
