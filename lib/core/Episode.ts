@@ -1,9 +1,9 @@
 export class Episode {
-  #id: number
-  #imdbId?: string
-  #seasonNumber: number
-  #episodeNumber: number
-  #title: string
+  readonly id: number
+  readonly imdbId?: string
+  readonly seasonNumber: number
+  readonly episodeNumber: number
+  readonly title: string
 
   constructor (
     id: number,
@@ -12,30 +12,10 @@ export class Episode {
     episodeNumber: number,
     title: string
   ) {
-    this.#id = id
-    this.#imdbId = imdbId
-    this.#seasonNumber = seasonNumber
-    this.#episodeNumber = episodeNumber
-    this.#title = title
-  }
-
-  get id () {
-    return this.#id
-  }
-
-  get imdbId () {
-    return this.#imdbId
-  }
-
-  get seasonNumber () {
-    return this.#seasonNumber
-  }
-
-  get episodeNumber () {
-    return this.#episodeNumber
-  }
-
-  get title () {
-    return this.#title
+    this.id = id
+    this.imdbId = imdbId
+    this.seasonNumber = seasonNumber
+    this.episodeNumber = episodeNumber
+    this.title = title
   }
 }

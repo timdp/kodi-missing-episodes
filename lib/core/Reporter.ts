@@ -5,14 +5,10 @@ import { TraktEpisode } from '../trakt/TraktEpisode'
 type Options = Record<string, any>
 
 export class Reporter {
-  #options: Options
+  readonly options: Options
 
   constructor (options: Options) {
-    this.#options = options
-  }
-
-  get options () {
-    return this.#options
+    this.options = options
   }
 
   onListKodiShows () {}

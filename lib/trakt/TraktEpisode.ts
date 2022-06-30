@@ -1,7 +1,7 @@
 import { Episode } from '../core/Episode'
 
 export class TraktEpisode extends Episode {
-  #firstAired?: Date
+  readonly firstAired?: Date
 
   constructor (
     id: number,
@@ -12,10 +12,6 @@ export class TraktEpisode extends Episode {
     firstAired: Date | undefined
   ) {
     super(id, imdbId, seasonNumber, episodeNumber, title)
-    this.#firstAired = firstAired
-  }
-
-  get firstAired () {
-    return this.#firstAired
+    this.firstAired = firstAired
   }
 }
