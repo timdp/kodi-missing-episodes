@@ -1,5 +1,6 @@
-import YAML from 'js-yaml'
 import { EOL } from 'node:os'
+
+import YAML from 'js-yaml'
 import ora, { Ora } from 'ora'
 
 import { Episode } from '../core/Episode'
