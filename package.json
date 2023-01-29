@@ -47,10 +47,5 @@
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "prettier-eslint-cli": "^7.1.0"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "prettier-eslint --write"
-    ]
   }
 }
